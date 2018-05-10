@@ -14,26 +14,27 @@ void ofApp::setup() {
     box2d.registerGrabbing();
     
     
-    // find all the texture files and load them
-   /* ofDirectory dir;
-    ofDisableArbTex();
-    int n = dir.listDir("textures");
-    for (int i=0; i<n; i++) {
-        textures.push_back(ofImage(dir.getPath(i)));
-    }
-    printf("%i Textures Loaded\n", (int)textures.size());
-    */
-    
     int baud = 9600;
     serial.setup("/dev/tty.usbmodem1411", baud);
     serial.startContinuousRead();
     ofAddListener(serial.NEW_MESSAGE,this,&ofApp::onNewMessage);
     
     message = "";
-    birdPic.load("bird_red.png");
+    loadBirdImage();
 }
 
-// migrate from final serial
+//////////////////load bird images ///////////////////
+void ofApp::loadBirdImage(){
+    ofDirectory dir;
+    ofDisableArbTex();
+    int n = dir.listDir("birds");
+    for (int i=0; i<n; i++) {
+        birdPics.push_back(ofImage(dir.getPath(i)));
+    }
+    
+}
+
+/////////////// migrate from final serial
 void ofApp::onNewMessage(string & message)
 {
     cout << "onNewMessage, message: " << message << "\n";
@@ -124,15 +125,8 @@ void ofApp::draw() {
         //angrybirds.back()->addForce( ofVec2f(30,-10), 20);
         
         angrybirds.back()->addForce( ofVec2f(force_directionX, force_directionY), 300);
+        dynamicBirdPics.push_back(birdPics[ofRandom(0,birdPics.size())]);
         
-        //shot_ball = 1;
-        /*
-         shapes.push_back(std::make_shared<TextureShape>());
-         shapes.back()->setTexture(&textures[(int)ofRandom(textures.size())]);
-         shapes.back()->setup(box2d, mouseX, mouseY, r);
-         
-         shapes.back()->addForce( ofVec2f(force_directionX, force_directionY), 500);
-         */
         shot_ball = 0;
     }
     
@@ -143,10 +137,11 @@ void ofApp::draw() {
     
     for(auto i=0; i<angrybirds.size(); i++){
         ofPushMatrix();
+        //int random_bird = ofRandom(0,birdPics.size());
         ofTranslate(angrybirds[i]->getPosition().x, angrybirds[i]->getPosition().y, 0);
         ofRotate(angrybirds[i]->getRotation());
-        birdPic.setAnchorPercent(0.5, 0.5);
-        birdPic.draw(0, 0);
+        dynamicBirdPics[i].setAnchorPercent(0.5, 0.5);
+        dynamicBirdPics[i].draw(0, 0);
         ofPopMatrix();
         
     }
@@ -176,12 +171,7 @@ void ofApp::draw() {
     ofSetHexColor(0x444342);
     ofDrawBitmapString(info, 30, 30);
     
-    
-    
-    
-    
-    
-    
+
     
     
     /*

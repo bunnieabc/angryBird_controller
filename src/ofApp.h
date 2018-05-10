@@ -22,6 +22,9 @@ public:
     void mouseReleased(int x, int y, int button);
     void windowResized(int w, int h);
     
+    // new function
+    void loadBirdImage();
+    
     ofxBox2d box2d;
     
     ofxSimpleSerial    serial;
@@ -52,6 +55,8 @@ public:
     // a vector of all the texture shapes
     //std::vector<std::shared_ptr<TextureShape>> shapes;
     
-    ofImage birdPic;
+    std::vector<ofImage> birdPics;
+    std::vector<ofImage> dynamicBirdPics;
+    ofxBox2dRect ground;
 };
 
