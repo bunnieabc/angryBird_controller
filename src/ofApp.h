@@ -37,6 +37,8 @@ public:
     void loadBirdImage();
     void loadPigs();
     void loadWoods();
+    void loadSlingshot();
+    void loadLevelUp();
     
     void setGround();
     
@@ -95,5 +97,17 @@ public:
     
     //load file's points
     vector <ofVec3f> loadPoints(string file);
+    
+    //slingshot
+    ofImage slingshot, stretch;
+    float slingShotHeight = 200;
+    //float stretchWidth = 60;
+    
+    ////////level up /////////////
+    ofImage levelUnlocked;
+    int levelFinished = 0;
+    ofSoundPlayer levelUpMusic;
+    int musicPlayOnce = 0, goToNexLevel = 0;    
+    float musicStart = 0;
 };
 

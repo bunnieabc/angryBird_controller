@@ -26,6 +26,8 @@ void ofApp::setup() {
     setGround();
     loadWoods();
     loadPigs();
+    loadSlingshot();
+    loadLevelUp();
     
     // initial listener and contact
     // register the listener so that we get the events
@@ -101,6 +103,17 @@ void ofApp::contactEnd(ofxBox2dContactArgs &e) {
         }
     }
 }
+//--------------------load slingshot----------------------
+void ofApp::loadSlingshot(){
+    slingshot.load("slingshot/slingshot1.png");
+    stretch.load("slingshot/stretch.png");
+}
+//-------------------- load level up ----------------------
+
+void ofApp::loadLevelUp(){
+    levelUnlocked.load("levelup-01.png");
+    levelUpMusic.loadSound("sound/levelup.mp3");
+}
 
 //--------------------------------------------------------------
 vector <ofVec3f> ofApp::loadPoints(string file) {
@@ -144,7 +157,13 @@ void ofApp::loadBirdImage(){
 void ofApp::loadPigs(){
     int woodHeight = 180;
     int woodWidth = 40;
-    vector <ofVec3f> pts = loadPoints("pigs.dat");
+    vector <ofVec3f> pts;
+    if(goToNexLevel == 1){
+        pts = loadPoints("pigs2.dat");
+    }
+    else{
+        pts = loadPoints("pigs.dat");
+    }
     
     
     
@@ -172,9 +191,13 @@ void ofApp::loadPigs(){
 void ofApp::loadWoods(){
     int woodHeight = 180;
     int woodWidth = 40;
-    vector <ofVec3f> pts = loadPoints("woods.dat");
-    
-    
+    vector <ofVec3f> pts;
+    if(goToNexLevel == 1){
+        pts = loadPoints("woods2.dat");
+    }
+    else{
+        pts = loadPoints("woods.dat");
+    }
     ofDirectory dir;
     ofDisableArbTex();
     
@@ -186,7 +209,7 @@ void ofApp::loadWoods(){
     
     for (int i=0; i<pts.size(); i++) {
         woods.push_back(std::make_shared<ofxBox2dRect>());
-        woods.back()->setPhysics(3, 0, 0.8);
+        woods.back()->setPhysics(3, 0, 2);
         woods.back()->setup(box2d.getWorld(),  pts[i].x, pts[i].y, woodWidth, woodHeight);
         woods.back()->setRotation(pts[i].z);
         woods.back()->setData(new SoundData());
@@ -275,7 +298,10 @@ void ofApp::update() {
         data->vel = sqrt(velX * velX + velY * velY );
     }
         
-    //}
+    /////////check pigs number and level up////////////
+    if(pigs.size() == 0){
+        levelFinished = 1;
+    }
     
     
     
@@ -369,8 +395,45 @@ void ofApp::draw() {
     }
     
     
-    // draw woods
+    //////////////////// draw slingshot //////////////////////
+    ofPushMatrix();
+    //float slingShotHeight = 180;
+    float slingShotScale = slingShotHeight / slingshot.getHeight();
+    float slingShotWidth = slingshot.getWidth() * slingShotScale;
+    ofTranslate(200, ofGetHeight()-(120 + slingShotHeight)-20);
+    
+    
+    float slingShotAngle = ofMap(acceZ, 13, 37, -90, 90);
+    ofTranslate( slingShotWidth/2, slingShotHeight);
+    ofRotate(slingShotAngle, 0, 0, 1);
+    ofTranslate( -slingShotWidth/2, -slingShotHeight);
+    
+    ofScale(slingShotScale, slingShotScale);
+    slingshot.draw(0,0);
+    ofPopMatrix();
 
+    ///////////////// level up /////////////////////////////
+    if(levelFinished == 1 && goToNexLevel == 0){
+        levelUnlocked.draw(ofGetWidth()/2-levelUnlocked.getWidth()/2,ofGetHeight()/2-levelUnlocked.getHeight()/2);
+        
+        if(musicPlayOnce == 0){
+            levelUpMusic.play();
+            musicPlayOnce = 1;
+            musicStart = ofGetElapsedTimef();
+        }
+        // after 5 second
+        if(ofGetElapsedTimef() - musicStart >= 3 && goToNexLevel == 0){
+            goToNexLevel = 1;
+            angrybirds.clear();
+            dynamicBirdPics.clear();
+            woods.clear();
+            dynamicWoodPics.clear();
+            loadWoods();
+            loadPigs();
+            
+        }
+    }
+    
     
     
     ofFill();
