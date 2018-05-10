@@ -1,17 +1,7 @@
 #include "ofApp.h"
 
-
 //--------------------------------------------------------------
-void ofApp::setup(){
-    int baud = 9600;
-    ofSetVerticalSync(true);
-    ofBackground(0, 0, 0);
-    
-    serial.setup("/dev/tty.usbmodem1411", baud);
-    serial.startContinuousRead();
-    ofAddListener(serial.NEW_MESSAGE,this,&ofApp::onNewMessage);
-    
-    message = "";
+void ofApp::setup() {
     
     ofSetVerticalSync(true);
     ofBackgroundHex(0xfdefc2);
@@ -22,32 +12,40 @@ void ofApp::setup(){
     box2d.createBounds();
     box2d.setFPS(60.0);
     box2d.registerGrabbing();
-    force = 100;
-    //first test circle
-    /*
-    float r = 50;
-    testCircle.setPhysics(3.0, 0.7, 0.1);
-    testCircle.setup(box2d.getWorld(), ofGetWidth()/2, ofGetHeight()-100, r);
     
     
+    // find all the texture files and load them
+   /* ofDirectory dir;
+    ofDisableArbTex();
+    int n = dir.listDir("textures");
+    for (int i=0; i<n; i++) {
+        textures.push_back(ofImage(dir.getPath(i)));
+    }
+    printf("%i Textures Loaded\n", (int)textures.size());
     */
-    //testCircle.addRepulsionForce(ofVec2f(-30, 10), 250);
-    force_prev = 100, force_now = 100;
+    
+    int baud = 9600;
+    serial.setup("/dev/tty.usbmodem1411", baud);
+    serial.startContinuousRead();
+    ofAddListener(serial.NEW_MESSAGE,this,&ofApp::onNewMessage);
+    
+    message = "";
+    birdPic.load("bird_red.png");
 }
 
-
+// migrate from final serial
 void ofApp::onNewMessage(string & message)
 {
     cout << "onNewMessage, message: " << message << "\n";
     
     vector<string> input = ofSplitString(message, ",");
     /*
-    if(input.size() >= 3)
-    {
-        red =    input.at(0) == "r";
-        green =    input.at(1) == "g";
-        blue =    input.at(2) == "b";
-    }*/
+     if(input.size() >= 3)
+     {
+     red =    input.at(0) == "r";
+     green =    input.at(1) == "g";
+     blue =    input.at(2) == "b";
+     }*/
     
     
     if(input.size() >= 4 && delay_serial >= 1)
@@ -70,6 +68,8 @@ void ofApp::onNewMessage(string & message)
         
         force_now = force;
         cout<<"force_now: " <<force_now <<", prev: "<<force_prev << endl;
+        cout<<"texture_size: " << textures.size() << endl;
+        
         
         if(force_prev - force_now >= 8) {
             shot_ball = 1;
@@ -81,7 +81,9 @@ void ofApp::onNewMessage(string & message)
 
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update() {
+    
+    
     if(requestRead)
     {
         cout << "sendRequest\n";
@@ -89,16 +91,23 @@ void ofApp::update(){
         requestRead = false;
     }
     
-    if(force<=5){
-        
-        
-    }
+    
+    // add some circles every so often
+    /*if((int)ofRandom(0, 10) == 0) {
+     shapes.push_back(std::make_shared<TextureShape>());
+     shapes.back()->setTexture(&textures[(int)ofRandom(textures.size())]);
+     shapes.back()->setup(box2d, (ofGetWidth()/2)+ofRandom(-20, 20), -20, ofRandom(10, 50));
+     }*/
+    
     box2d.update();
     delay_serial = ofGetElapsedTimef();
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::draw() {
+    
+    
+    
     ofFill();
     ofSetHexColor(0xf6c738);
     for(auto circle: circles) {
@@ -114,17 +123,37 @@ void ofApp::draw(){
         angrybirds.back()->setup(box2d.getWorld(), mouseX, mouseY, r);
         //angrybirds.back()->addForce( ofVec2f(30,-10), 20);
         
-        angrybirds.back()->addForce( ofVec2f(force_directionX, force_directionY), 500);
+        angrybirds.back()->addForce( ofVec2f(force_directionX, force_directionY), 300);
         
         //shot_ball = 1;
-        
+        /*
+         shapes.push_back(std::make_shared<TextureShape>());
+         shapes.back()->setTexture(&textures[(int)ofRandom(textures.size())]);
+         shapes.back()->setup(box2d, mouseX, mouseY, r);
+         
+         shapes.back()->addForce( ofVec2f(force_directionX, force_directionY), 500);
+         */
         shot_ball = 0;
     }
     
-    //if(shot_ball == 1) {
-        for(auto angrybird: angrybirds) {
-            angrybird->draw();
-        }
+    
+    /*for(auto angrybird: angrybirds) {
+        angrybird->draw();
+    }*/
+    
+    for(auto i=0; i<angrybirds.size(); i++){
+        ofPushMatrix();
+        ofTranslate(angrybirds[i]->getPosition().x, angrybirds[i]->getPosition().y, 0);
+        ofRotate(angrybirds[i]->getRotation());
+        birdPic.setAnchorPercent(0.5, 0.5);
+        birdPic.draw(0, 0);
+        ofPopMatrix();
+        
+    }
+    
+    /*for(auto i=0; i<shapes.size(); i++) {
+     shapes[i]->draw();
+     }*/
     //}
     
     ofFill();
@@ -132,6 +161,8 @@ void ofApp::draw(){
     for(auto box: boxes) {
         box->draw();
     }
+    
+    //birdPic.draw(0, 0);
     
     // draw the ground
     box2d.drawGround();
@@ -145,76 +176,53 @@ void ofApp::draw(){
     ofSetHexColor(0x444342);
     ofDrawBitmapString(info, 30, 30);
     
+    
+    
+    
+    
+    
+    
+    
+    
+    /*
+     // some debug information
+     string info = "Textures from subtlepatterns.com\n";
+     info += "Press c to clear everything\n";
+     */
+    //ofSetHexColor(0x444342);
+    //ofDrawBitmapString(info, 10, 15);
 }
 
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key){
 
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key) {
     if(key == 'c') {
-        float r = ofRandom(4, 20);
-        circles.push_back(std::make_shared<ofxBox2dCircle>());
-        circles.back()->setPhysics(3.0, 0.53, 0.1);
-        circles.back()->setup(box2d.getWorld(), mouseX, mouseY, r);
-        circles.back()->addForce( ofVec2f(30,-10), 20);
+        //shapes.clear();
     }
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseMoved(int x, int y) {
     
-    if(key == 'b') {
-        float w = ofRandom(4, 20);
-        float h = ofRandom(4, 20);
-        boxes.push_back(std::make_shared<ofxBox2dRect>());
-        boxes.back()->setPhysics(3.0, 0.53, 0.1);
-        boxes.back()->setup(box2d.getWorld(), mouseX, mouseY, w, h);
-    }
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseDragged(int x, int y, int button) {
     
-    if(key == 't') ofToggleFullscreen();
 }
 
 //--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
+void ofApp::mousePressed(int x, int y, int button) {
+    
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
+void ofApp::mouseReleased(int x, int y, int button) {
+    
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
+void ofApp::windowResized(int w, int h) {
+    
 }
 
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-requestRead = true;
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
-}

@@ -1,30 +1,28 @@
 #pragma once
-
 #include "ofMain.h"
 #include "ofxSimpleSerial.h"
 #include <vector>
 #include "ofUtils.h"
 #include "ofxBox2d.h"
+#include "TextureShape.h"
 
-class ofApp : public ofBaseApp{
-
-	public:
-		void setup();
-		void update();
-		void draw();
-
-		void keyPressed(int key);
-		void keyReleased(int key);
-		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
-		void mousePressed(int x, int y, int button);
-		void mouseReleased(int x, int y, int button);
-		void mouseEntered(int x, int y);
-		void mouseExited(int x, int y);
-		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
-		
+// ------------------------------------------------- App
+class ofApp: public ofBaseApp {
+    
+public:
+    
+    void setup();
+    void update();
+    void draw();
+    
+    void keyPressed(int key);
+    void mouseMoved(int x, int y);
+    void mouseDragged(int x, int y, int button);
+    void mousePressed(int x, int y, int button);
+    void mouseReleased(int x, int y, int button);
+    void windowResized(int w, int h);
+    
+    ofxBox2d box2d;
     
     ofxSimpleSerial    serial;
     string        message;
@@ -35,7 +33,7 @@ class ofApp : public ofBaseApp{
     bool        requestRead;
     void        onNewMessage(string & message);
     
-    ofxBox2d box2d;   // the box2d world
+    //ofxBox2d box2d;   // the box2d world
     std::vector<std::shared_ptr<ofxBox2dCircle>> circles; // default box2d circles
     std::vector<std::shared_ptr<ofxBox2dRect>> boxes; // defalut box2d rects
     std::vector<std::shared_ptr<ofxBox2dCircle>> angrybirds;
@@ -46,4 +44,14 @@ class ofApp : public ofBaseApp{
     float force_directionY;
     float force_prev, force_now;
     
+    
+    
+    // a vector of all the texture images
+    std::vector<ofImage> textures;
+    
+    // a vector of all the texture shapes
+    //std::vector<std::shared_ptr<TextureShape>> shapes;
+    
+    ofImage birdPic;
 };
+
