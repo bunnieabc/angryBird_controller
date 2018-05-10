@@ -71,11 +71,11 @@ void ofApp::contactStart(ofxBox2dContactArgs &e) {
             SoundData * bData = (SoundData*)e.b->GetBody()->GetUserData();
             
             if(!aData->ground){
-                if(aData && bData->vel >= 0.5) {
+                if(aData && bData->vel >= 0.7) {
                     aData->bHit = true;
                     //sound[aData->soundID].play();
                 }
-                if(bData && bData->vel >= 0.5) {
+                if(bData && bData->vel >= 0.7) {
                     bData->bHit = true;
                     sound[bData->soundID].play();
                 }
@@ -360,7 +360,11 @@ void ofApp::draw() {
          SoundData * data = (SoundData*)pigs[i].get()->getData();
         
         
-        if(data && data->bHit){pigs.clear(); dynamicPigPics.clear();}
+        if(data && data->bHit){
+            //pigs.clear(); dynamicPigPics.clear();
+            pigs.erase(pigs.begin() + i);
+            dynamicPigPics.erase(dynamicPigPics.begin() + i);
+        }
         ofPopMatrix();
     }
     
