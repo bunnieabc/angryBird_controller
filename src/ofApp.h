@@ -5,6 +5,14 @@
 #include "ofUtils.h"
 #include "ofxBox2d.h"
 #include "TextureShape.h"
+#define N_SOUNDS 5
+
+class SoundData {
+public:
+    int     soundID;
+    bool bHit;
+};
+
 
 // ------------------------------------------------- App
 class ofApp: public ofBaseApp {
@@ -67,5 +75,16 @@ public:
     ofImage angryBirdBg;
     int drawShape = 0;
     float r = 40;
+    
+    // listener
+    // this is the function for contacts
+    void contactStart(ofxBox2dContactArgs &e);
+    void contactEnd(ofxBox2dContactArgs &e);
+    
+    // when the ball hits we play this sound
+    ofSoundPlayer  sound[N_SOUNDS];
+    
+    //load file's points
+    vector <ofVec3f> loadPoints(string file);
 };
 

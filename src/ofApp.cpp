@@ -8,6 +8,7 @@ void ofApp::setup() {
     ofSetLogLevel(OF_LOG_NOTICE);
     
     box2d.init();
+    box2d.enableEvents();
     box2d.setGravity(0, 10);
     box2d.createBounds();
     box2d.setFPS(60.0);
@@ -24,8 +25,76 @@ void ofApp::setup() {
     loadBirdImage();
     setGround();
     loadWoods();
+    
+    // initial listener and contact
+    // register the listener so that we get the events
+    ofAddListener(box2d.contactStartEvents, this, &ofApp::contactStart);
+    ofAddListener(box2d.contactEndEvents, this, &ofApp::contactEnd);
+    
+    // load the 8 sfx soundfile
+    for (int i=0; i<N_SOUNDS; i++) {
+        sound[i].loadSound("sfx/"+ofToString(i)+".mp3");
+        sound[i].setMultiPlay(true);
+        sound[i].setLoop(false);
+    }
 
 }
+
+//--------------------------------------------------------------
+void ofApp::contactStart(ofxBox2dContactArgs &e) {
+    if(e.a != NULL && e.b != NULL) {
+        
+        // if we collide with the ground we do not
+        // want to play a sound. this is how you do that
+        if(e.a->GetType() == b2Shape::e_circle && e.b->GetType() == b2Shape::e_circle) {
+            
+            SoundData * aData = (SoundData*)e.a->GetBody()->GetUserData();
+            SoundData * bData = (SoundData*)e.b->GetBody()->GetUserData();
+            
+            if(aData) {
+                aData->bHit = true;
+                sound[aData->soundID].play();
+            }
+            
+            if(bData) {
+                bData->bHit = true;
+                sound[bData->soundID].play();
+            }
+        }
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::contactEnd(ofxBox2dContactArgs &e) {
+    if(e.a != NULL && e.b != NULL) {
+        
+        SoundData * aData = (SoundData*)e.a->GetBody()->GetUserData();
+        SoundData * bData = (SoundData*)e.b->GetBody()->GetUserData();
+        
+        if(aData) {
+            aData->bHit = false;
+        }
+        
+        if(bData) {
+            bData->bHit = false;
+        }
+    }
+}
+
+//--------------------------------------------------------------
+vector <ofVec3f> ofApp::loadPoints(string file) {
+    vector <ofVec3f> pts;
+    vector <string>  ptsStr = ofSplitString(ofBufferFromFile(file).getText(), ",");
+    for (int i=0; i<ptsStr.size(); i+=3) {
+        float x = ofToFloat(ptsStr[i]);
+        float y = ofToFloat(ptsStr[i+1]);
+        float rotation = ofToFloat(ptsStr[i+2]);
+        pts.push_back(ofVec3f(x, y, rotation));
+        cout<<"--------rotation--------"<< endl << rotation << endl <<"----------------------" << endl;
+    }
+    return pts;
+}
+
 ///////////////////set up ground ////////////////////
 void ofApp::setGround(){
     ground.setPhysics(100.0, 0, 0.1);
@@ -48,19 +117,32 @@ void ofApp::loadBirdImage(){
 void ofApp::loadWoods(){
     int woodHeight = 180;
     int woodWidth = 40;
+    vector <ofVec3f> pts = loadPoints("woods.dat");
+    
     
     ofDirectory dir;
     ofDisableArbTex();
+    
+    
     int n = dir.listDir("woods");
     for (int i=0; i<n; i++) {
         woodPics.push_back(ofImage(dir.getPath(i)));
     }
     
+    for (int i=0; i<pts.size(); i++) {
+        woods.push_back(std::make_shared<ofxBox2dRect>());
+        woods.back()->setPhysics(3, 0, 0.1);
+        woods.back()->setup(box2d.getWorld(),  pts[i].x, pts[i].y, woodWidth, woodHeight);
+        woods.back()->setRotation(pts[i].z);
+        dynamicWoodPics.push_back(woodPics[ofRandom(0,woodPics.size())]);
+        
+    }
+    /*
     woods.push_back(std::make_shared<ofxBox2dRect>());
     woods.back()->setPhysics(3, 0, 0.1);
     woods.back()->setup(box2d.getWorld(),  ofGetWidth()/4*3, ofGetHeight() - 60 - woodHeight/2, woodWidth, woodHeight);
     dynamicWoodPics.push_back(woodPics[ofRandom(0,woodPics.size())]);
-    
+     
     woods.push_back(std::make_shared<ofxBox2dRect>());
     woods.back()->setPhysics(3, 0, 0.1);
     woods.back()->setup(box2d.getWorld(),  ofGetWidth()/4*3 - woodHeight + woodWidth, ofGetHeight() - 60 - woodHeight/2, woodWidth, woodHeight);
@@ -152,7 +234,10 @@ void ofApp::draw() {
         angrybirds.push_back(std::make_shared<ofxBox2dCircle>());
         angrybirds.back()->setPhysics(2.0, 0.53, 0.1);
         angrybirds.back()->setup(box2d.getWorld(), mouseX, mouseY, r);
-        //angrybirds.back()->addForce( ofVec2f(30,-10), 20);
+        angrybirds.back()->setData(new SoundData());
+        SoundData * sd = (SoundData*)angrybirds.back()->getData();
+        sd->soundID = ofRandom(0, N_SOUNDS);
+        sd->bHit = false;
         
         angrybirds.back()->addForce( ofVec2f(force_directionX, force_directionY), 300);
         dynamicBirdPics.push_back(birdPics[ofRandom(0,birdPics.size())]);
@@ -176,6 +261,7 @@ void ofApp::draw() {
         dynamicBirdPics[i].setAnchorPercent(0.5, 0.5);
         dynamicBirdPics[i].draw(0, 0);
         ofPopMatrix();
+        SoundData * data = (SoundData*)angrybirds[i].get()->getData();
     }
     
     //draw woods
