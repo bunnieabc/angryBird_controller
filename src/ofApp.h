@@ -24,6 +24,7 @@ public:
     
     // new function
     void loadBirdImage();
+    void loadWoods();
     void setGround();
     
     ofxBox2d box2d;
@@ -39,7 +40,7 @@ public:
     
     //ofxBox2d box2d;   // the box2d world
     std::vector<std::shared_ptr<ofxBox2dCircle>> circles; // default box2d circles
-    std::vector<std::shared_ptr<ofxBox2dRect>> boxes; // defalut box2d rects
+    std::vector<std::shared_ptr<ofxBox2dRect>> woods; // defalut box2d rects
     std::vector<std::shared_ptr<ofxBox2dCircle>> angrybirds;
     ofxBox2dCircle testCircle;
     int shot_ball = 0;
@@ -58,6 +59,13 @@ public:
     
     std::vector<ofImage> birdPics;
     std::vector<ofImage> dynamicBirdPics;
+    
+    std::vector<ofImage> woodPics;
+    std::vector<ofImage> dynamicWoodPics;
+    
     ofxBox2dRect ground;
+    ofImage angryBirdBg;
+    int drawShape = 0;
+    float r = 40;
 };
 

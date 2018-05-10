@@ -23,13 +23,14 @@ void ofApp::setup() {
     //load functions
     loadBirdImage();
     setGround();
-    
+    loadWoods();
 
 }
 ///////////////////set up ground ////////////////////
 void ofApp::setGround(){
     ground.setPhysics(100.0, 0, 0.1);
-    ground.setup(box2d.getWorld(),  ofGetWidth()/2, ofGetHeight()-100, ofGetWidth(), 100);
+    ground.setup(box2d.getWorld(),  ofGetWidth()/2, ofGetHeight()-60, ofGetWidth(), 120);
+    angryBirdBg.load("bg/angry_bird_world.png");
     
 }
 
@@ -43,6 +44,38 @@ void ofApp::loadBirdImage(){
     }
     
 }
+//////////////////load bird images ///////////////////
+void ofApp::loadWoods(){
+    int woodHeight = 180;
+    int woodWidth = 40;
+    
+    ofDirectory dir;
+    ofDisableArbTex();
+    int n = dir.listDir("woods");
+    for (int i=0; i<n; i++) {
+        woodPics.push_back(ofImage(dir.getPath(i)));
+    }
+    
+    woods.push_back(std::make_shared<ofxBox2dRect>());
+    woods.back()->setPhysics(3, 0, 0.1);
+    woods.back()->setup(box2d.getWorld(),  ofGetWidth()/4*3, ofGetHeight() - 60 - woodHeight/2, woodWidth, woodHeight);
+    dynamicWoodPics.push_back(woodPics[ofRandom(0,woodPics.size())]);
+    
+    woods.push_back(std::make_shared<ofxBox2dRect>());
+    woods.back()->setPhysics(3, 0, 0.1);
+    woods.back()->setup(box2d.getWorld(),  ofGetWidth()/4*3 - woodHeight + woodWidth, ofGetHeight() - 60 - woodHeight/2, woodWidth, woodHeight);
+    dynamicWoodPics.push_back(woodPics[ofRandom(0,woodPics.size())]);
+    
+    woods.push_back(std::make_shared<ofxBox2dRect>());
+    woods.back()->setPhysics(3, 0, 0.1);
+    woods.back()->setup(box2d.getWorld(),  ofGetWidth()/4*3 - woodHeight/2 + woodWidth/2, ofGetHeight() - 60 - woodHeight, woodWidth, woodHeight);
+    woods.back()->setRotation(90);
+    dynamicWoodPics.push_back(woodPics[ofRandom(0,woodPics.size())]);
+    /*
+    */
+    
+}
+
 
 /////////////// migrate from final serial
 void ofApp::onNewMessage(string & message)
@@ -50,13 +83,6 @@ void ofApp::onNewMessage(string & message)
     cout << "onNewMessage, message: " << message << "\n";
     
     vector<string> input = ofSplitString(message, ",");
-    /*
-     if(input.size() >= 3)
-     {
-     red =    input.at(0) == "r";
-     green =    input.at(1) == "g";
-     blue =    input.at(2) == "b";
-     }*/
     
     
     if(input.size() >= 4 && delay_serial >= 1)
@@ -103,14 +129,9 @@ void ofApp::update() {
     }
     
     
-    // add some circles every so often
-    /*if((int)ofRandom(0, 10) == 0) {
-     shapes.push_back(std::make_shared<TextureShape>());
-     shapes.back()->setTexture(&textures[(int)ofRandom(textures.size())]);
-     shapes.back()->setup(box2d, (ofGetWidth()/2)+ofRandom(-20, 20), -20, ofRandom(10, 50));
-     }*/
-    
     box2d.update();
+    
+    // get the delay time so you can read the value
     delay_serial = ofGetElapsedTimef();
 }
 
@@ -120,15 +141,14 @@ void ofApp::draw() {
     
     
     ofFill();
-    ofSetHexColor(0xBF2545);
-    /*for(auto circle: circles) {
-        circle->draw();
-    }*/
-    ground.draw();
+    ofSetHexColor(0xffffff);
+    
+    // set background
+    angryBirdBg.draw(0, -20);
     
     
     if(shot_ball == 1){
-        float r = 50;
+        
         angrybirds.push_back(std::make_shared<ofxBox2dCircle>());
         angrybirds.back()->setPhysics(2.0, 0.53, 0.1);
         angrybirds.back()->setup(box2d.getWorld(), mouseX, mouseY, r);
@@ -145,30 +165,42 @@ void ofApp::draw() {
         angrybird->draw();
     }*/
     
+    // draw birds
     for(auto i=0; i<angrybirds.size(); i++){
         ofPushMatrix();
         //int random_bird = ofRandom(0,birdPics.size());
+        float scalePic = (r * 2 + 10) / dynamicBirdPics[i].getWidth();
         ofTranslate(angrybirds[i]->getPosition().x, angrybirds[i]->getPosition().y, 0);
         ofRotate(angrybirds[i]->getRotation());
+        ofScale(scalePic, scalePic);
         dynamicBirdPics[i].setAnchorPercent(0.5, 0.5);
         dynamicBirdPics[i].draw(0, 0);
+        ofPopMatrix();
+    }
+    
+    //draw woods
+    
+    for(auto i=0; i<woods.size(); i++){
+        ofPushMatrix();
+        //int random_bird = ofRandom(0,birdPics.size());
+        ofTranslate(woods[i]->getPosition().x, woods[i]->getPosition().y, 0);
+        ofRotate(woods[i]->getRotation());
+        dynamicWoodPics[i].setAnchorPercent(0.5, 0.5);
+        dynamicWoodPics[i].draw(0, 0);
         ofPopMatrix();
         
     }
     
-    /*for(auto i=0; i<shapes.size(); i++) {
-     shapes[i]->draw();
-     }*/
-    //}
+    
+    // draw woods
+    ofPushStyle();
+    ofFill();
+    ofSetHexColor(0xffffff);
+    
+    ofPopStyle();
+    
     
     ofFill();
-    ofSetHexColor(0xBF2545);
-    
-    for(auto box: boxes) {
-        box->draw();
-    }
-    
-    //birdPic.draw(0, 0);
     
     // draw the ground
     box2d.drawGround();
@@ -183,15 +215,18 @@ void ofApp::draw() {
     ofDrawBitmapString(info, 30, 30);
     
 
+    if(drawShape == 1){
+        ground.draw();
+        for(auto angrybird: angrybirds) {
+            angrybird->draw();
+        }
+        
+        for(auto wood: woods) {
+            wood->draw();
+        }
+    }
     
-    
-    /*
-     // some debug information
-     string info = "Textures from subtlepatterns.com\n";
-     info += "Press c to clear everything\n";
-     */
-    //ofSetHexColor(0x444342);
-    //ofDrawBitmapString(info, 10, 15);
+
 }
 
 
@@ -199,6 +234,13 @@ void ofApp::draw() {
 void ofApp::keyPressed(int key) {
     if(key == 'c') {
         //shapes.clear();
+        
+        if(drawShape == 1){
+            drawShape = 0;
+        }
+        else{
+            drawShape = 1;
+        }
     }
 }
 
