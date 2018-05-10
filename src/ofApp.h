@@ -24,6 +24,7 @@ public:
     
     // new function
     void loadBirdImage();
+    void setGround();
     
     ofxBox2d box2d;
     

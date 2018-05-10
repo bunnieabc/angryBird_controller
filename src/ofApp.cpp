@@ -20,7 +20,17 @@ void ofApp::setup() {
     ofAddListener(serial.NEW_MESSAGE,this,&ofApp::onNewMessage);
     
     message = "";
+    //load functions
     loadBirdImage();
+    setGround();
+    
+
+}
+///////////////////set up ground ////////////////////
+void ofApp::setGround(){
+    ground.setPhysics(100.0, 0, 0.1);
+    ground.setup(box2d.getWorld(),  ofGetWidth()/2, ofGetHeight()-100, ofGetWidth(), 100);
+    
 }
 
 //////////////////load bird images ///////////////////
@@ -110,11 +120,11 @@ void ofApp::draw() {
     
     
     ofFill();
-    ofSetHexColor(0xf6c738);
-    for(auto circle: circles) {
+    ofSetHexColor(0xBF2545);
+    /*for(auto circle: circles) {
         circle->draw();
-    }
-    
+    }*/
+    ground.draw();
     
     
     if(shot_ball == 1){
@@ -153,6 +163,7 @@ void ofApp::draw() {
     
     ofFill();
     ofSetHexColor(0xBF2545);
+    
     for(auto box: boxes) {
         box->draw();
     }
