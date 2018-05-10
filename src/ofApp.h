@@ -2,6 +2,7 @@
 #include "ofMain.h"
 #include "ofxSimpleSerial.h"
 #include <vector>
+#include <math.h>
 #include "ofUtils.h"
 #include "ofxBox2d.h"
 #include "TextureShape.h"
@@ -11,6 +12,8 @@ class SoundData {
 public:
     int     soundID;
     bool bHit;
+    bool ground = false;
+    float vel = 0;
 };
 
 
@@ -32,7 +35,9 @@ public:
     
     // new function
     void loadBirdImage();
+    void loadPigs();
     void loadWoods();
+    
     void setGround();
     
     ofxBox2d box2d;
@@ -50,6 +55,7 @@ public:
     std::vector<std::shared_ptr<ofxBox2dCircle>> circles; // default box2d circles
     std::vector<std::shared_ptr<ofxBox2dRect>> woods; // defalut box2d rects
     std::vector<std::shared_ptr<ofxBox2dCircle>> angrybirds;
+    std::vector<std::shared_ptr<ofxBox2dCircle>> pigs;
     ofxBox2dCircle testCircle;
     int shot_ball = 0;
     float delay_serial = 0;
@@ -70,6 +76,9 @@ public:
     
     std::vector<ofImage> woodPics;
     std::vector<ofImage> dynamicWoodPics;
+    
+    ofImage pigPic;
+    std::vector<ofImage> dynamicPigPics;
     
     ofxBox2dRect ground;
     ofImage angryBirdBg;
