@@ -91,7 +91,7 @@ void ofApp::contactStart(ofxBox2dContactArgs &e) {
 }
 
 //--------------------------------------------------------------
-void ofApp::contactEnd(ofxBox2dContactArgs &e) {
+void ofApp::vEnd(ofxBox2dContactArgs &e) {
     if(e.a != NULL && e.b != NULL) {
         
         SoundData * aData = (SoundData*)e.a->GetBody()->GetUserData();
