@@ -40,6 +40,9 @@ void ofApp::setup() {
         sound[i].setMultiPlay(true);
         sound[i].setLoop(false);
     }
+    
+    bgMusic.loadSound("sound/bgmusic.mp3");
+    bgMusic.play();
 
 }
 

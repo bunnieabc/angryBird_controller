@@ -109,5 +109,8 @@ public:
     ofSoundPlayer levelUpMusic;
     int musicPlayOnce = 0, goToNexLevel = 0;    
     float musicStart = 0;
+    
+    ////////////background music setup //////////////
+    ofSoundPlayer bgMusic;
 };
 
